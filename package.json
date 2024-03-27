@@ -1,10 +1,19 @@
 {
     "name": "@ricb/csv",
-    "version": "1.0.0",
+    "version": "0.9.0",
     "description": "Reads and writes data to and from flat files",
-    "main": "index.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md",
+        "package.json"
+    ],
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "build": "tsc",
+        "test": "vitest"
     },
     "keywords": [
         "csv",
@@ -13,5 +22,12 @@
         "parse"
     ],
     "author": "Richard B",
-    "license": "MIT"
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^20.11.30",
+        "@typescript-eslint/eslint-plugin": "^7.4.0",
+        "@typescript-eslint/parser": "^7.4.0",
+        "typescript": "^5.4.3",
+        "vitest": "^1.4.0"
+    }
 }
