@@ -1,0 +1,17 @@
+{
+    "name": "@ricb/csv",
+    "version": "1.0.0",
+    "description": "Reads and writes data to and from flat files",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "csv",
+        "flatfile",
+        "serialize",
+        "parse"
+    ],
+    "author": "Richard B",
+    "license": "MIT"
+}
