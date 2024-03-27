@@ -2,8 +2,8 @@
     "name": "@ricb/csv",
     "version": "0.9.5",
     "description": "Reads and writes data to and from flat files",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/csv.js",
+    "types": "./dist/csv.d.ts",
     "type": "module",
     "files": [
         "dist",
