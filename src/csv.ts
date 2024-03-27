@@ -13,21 +13,20 @@ export type CsvOptions = {
     arraySeparator?: string
     mapping?: CsvMapping
     detectTypes?: boolean
+    detectSeparator?: boolean
 }
 
 export const SaveCsvDefaultOptions: CsvOptions = {
-    separator: '\t',
+    separator: ',',
     arraySeparator: '|'
 }
 
 export const LoadCsvDefaultOptions: CsvOptions = {
-    separator: SaveCsvDefaultOptions.separator,
+    separator: undefined,
     arraySeparator: SaveCsvDefaultOptions.arraySeparator,
     detectTypes: true
 }
-//return line.split(new RegExp(separator + '(?=(?:[^"]*"[^"]*")*[^"]*$)'))
 
-// function to split line by separator but ignore separator inside double quotes. Keep double quotes. not using regex
 function splitLine(line: string, separator: string) {
     const values = []
     let value = ''
@@ -46,33 +45,6 @@ function splitLine(line: string, separator: string) {
     }
     values.push(value)
     return values
-}
-
-export async function saveToFile<T extends Record<string, unknown>>(data: T[], filePath: string, options: CsvOptions = {}): Promise<string> {
-    const { separator, fields, arraySeparator } = { ...SaveCsvDefaultOptions, ...options }
-    const headers = fields ?? Object.keys(data[0])
-    const lines = [headers.join(separator)]
-    data.forEach(obj => {
-        const line = headers.map(header => {
-            let value = obj[header]
-            if (Array.isArray(value)) {
-                value = `${value.join(arraySeparator)}`
-            }
-
-            if (typeof value === 'string') {
-                if (value.includes(separator!) || value.includes(arraySeparator!))
-                    return `"${value.replace(/"/g, '""')}"`
-                return value
-            }
-            if (typeof value === 'object' && value instanceof Date) {
-                return value.toISOString()
-            }
-            return value
-        }).join(separator)
-        lines.push(line)
-    })
-    await writeFile(filePath, lines.join('\n'))
-    return filePath
 }
 
 function getMappingValue(value: string, type?: CsvMappingType | 'auto', arraySeparator = ','): unknown {
@@ -110,11 +82,53 @@ function getMappingValue(value: string, type?: CsvMappingType | 'auto', arraySep
     return value
 }
 
-export async function loadFromFile<T extends Record<string, unknown>>(filePath: string, options: CsvOptions = {}): Promise<T[]> {
-    const { separator, fields, mapping, detectTypes, arraySeparator } = { ...LoadCsvDefaultOptions, ...options }
+export function toCsv(data: Record<string, unknown>[], options: CsvOptions = {}): string {
+    const { separator, fields, arraySeparator } = { ...SaveCsvDefaultOptions, ...options }
+    const headers = fields ?? Object.keys(data[0])
+    const lines = [headers.join(separator)]
+    data.forEach(obj => {
+        const line = headers.map(header => {
+            let value = obj[header]
+            if (Array.isArray(value)) {
+                value = `${value.join(arraySeparator)}`
+            }
 
-    const fileData = (await readFile(filePath, 'utf-8'))
-        .split('\n')
+            if (typeof value === 'string') {
+                if (value.includes(separator!) || value.includes(arraySeparator!))
+                    return `"${value.replace(/"/g, '""')}"`
+                return value
+            }
+            if (typeof value === 'object' && value instanceof Date) {
+                return value.toISOString()
+            }
+            return value
+        }).join(separator)
+        lines.push(line)
+    })
+    return lines.join('\n')
+}
+
+export async function writeCsv(data: Record<string, unknown>[], filePath: string, options: CsvOptions = {}): Promise<string> {
+    await writeFile(filePath, toCsv(data, options))
+    return filePath
+}
+
+// return the separator that appears the most in the first line
+function detectSeparator(text: string): string {
+    const separators = [',', ';', '\t']
+    const counts = separators.map(sep => ({ sep, count: (text.match(new RegExp(sep, 'g')) || []).length }))
+    if (counts.every(c => c.count === 0))
+        throw new Error('No separator found in the first line')
+    return counts.sort((a, b) => b.count - a.count)[0].sep
+}
+
+export function fromCsv<T extends Record<string, unknown>>(text: string, options: CsvOptions = {}): T[] {
+    const { separator: _sep, fields, mapping, detectTypes, arraySeparator } = { ...LoadCsvDefaultOptions, ...options }
+
+    const lines = text.split('\n')
+    const separator = _sep ?? detectSeparator(lines[0])
+
+    const fileData = lines
         .map(line => splitLine((line ?? '').replace(/\r/g, ''), separator!))
     const headers = fields ?? fileData[0]
     const objects: T[] = []
@@ -131,4 +145,8 @@ export async function loadFromFile<T extends Record<string, unknown>>(filePath: 
         objects.push(obj2 as T)
     }
     return objects
+}
+export async function readCsv<T extends Record<string, unknown>>(filePath: string, options: CsvOptions = {}): Promise<T[]> {
+    const fileContent = await readFile(filePath, 'utf-8')
+    return fromCsv(fileContent, options)
 }
