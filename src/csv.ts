@@ -13,17 +13,16 @@ export type CsvOptions = {
     arraySeparator?: string
     mapping?: CsvMapping
     detectTypes?: boolean
-    detectSeparator?: boolean
 }
 
-export const SaveCsvDefaultOptions: CsvOptions = {
+export const WriteCsvDefaultOptions: CsvOptions = {
     separator: ',',
     arraySeparator: '|'
 }
 
-export const LoadCsvDefaultOptions: CsvOptions = {
+export const ReadCsvDefaultOptions: CsvOptions = {
     separator: undefined,
-    arraySeparator: SaveCsvDefaultOptions.arraySeparator,
+    arraySeparator: WriteCsvDefaultOptions.arraySeparator,
     detectTypes: true
 }
 
@@ -83,7 +82,7 @@ function getMappingValue(value: string, type?: CsvMappingType | 'auto', arraySep
 }
 
 export function toCsv(data: Record<string, unknown>[], options: CsvOptions = {}): string {
-    const { separator, fields, arraySeparator } = { ...SaveCsvDefaultOptions, ...options }
+    const { separator, fields, arraySeparator } = { ...WriteCsvDefaultOptions, ...options }
     const headers = fields ?? Object.keys(data[0])
     const lines = [headers.join(separator)]
     data.forEach(obj => {
@@ -123,7 +122,7 @@ function detectSeparator(text: string): string {
 }
 
 export function fromCsv<T extends Record<string, unknown>>(text: string, options: CsvOptions = {}): T[] {
-    const { separator: _sep, fields, mapping, detectTypes, arraySeparator } = { ...LoadCsvDefaultOptions, ...options }
+    const { separator: _sep, fields, mapping, detectTypes, arraySeparator } = { ...ReadCsvDefaultOptions, ...options }
 
     const lines = text.split('\n')
     const separator = _sep ?? detectSeparator(lines[0])
