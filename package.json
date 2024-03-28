@@ -5,6 +5,14 @@
     "main": "./dist/csv.js",
     "types": "./dist/csv.d.ts",
     "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kjellrichard/csv.git"
+    },
+    "homepage": "https://github.com/kjellrichard/csv#readme",
+    "bugs": {
+        "url": "https://github.com/kjellrichard/csv/issues"
+    },
     "files": [
         "dist",
         "LICENSE",

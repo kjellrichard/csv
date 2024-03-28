@@ -16,7 +16,7 @@ This project provides functionality to write and read CSV files, as well as pars
 * By default it will try to detect data type for values when parsing.
 * It will try to detect value separator if not explicitly specified.
 
-See [CsvOption](#CsvOption) for more info
+See [CsvOptions](#csvoptions) for more info
 
 ### Writing and Reading CSV
 
