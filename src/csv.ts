@@ -15,6 +15,7 @@ export type CsvOptions = {
     detectTypes?: boolean
 }
 
+export type Writeable = Record<string, unknown> | never | object
 export const WriteCsvDefaultOptions: CsvOptions = {
     separator: ',',
     arraySeparator: '|'
@@ -81,7 +82,7 @@ function getMappingValue(value: string, type?: CsvMappingType | 'auto', arraySep
     return value
 }
 
-export function toCsv(data: Record<string, unknown>[], options: CsvOptions = {}): string {
+export function toCsv(data: Writeable[], options: CsvOptions = {}): string {
     const { separator, fields, arraySeparator } = { ...WriteCsvDefaultOptions, ...options }
     const headers = fields ?? Object.keys(data[0])
     const lines = [headers.join(separator)]
@@ -107,7 +108,7 @@ export function toCsv(data: Record<string, unknown>[], options: CsvOptions = {})
     return lines.join('\n')
 }
 
-export async function writeCsv(data: Record<string, unknown>[], filePath: string, options: CsvOptions = {}): Promise<string> {
+export async function writeCsv(data: Writeable[], filePath: string, options: CsvOptions = {}): Promise<string> {
     await writeFile(filePath, toCsv(data, options))
     return filePath
 }
@@ -121,7 +122,7 @@ function detectSeparator(text: string): string {
     return counts.sort((a, b) => b.count - a.count)[0].sep
 }
 
-export function fromCsv<T extends Record<string, unknown>>(text: string, options: CsvOptions = {}): T[] {
+export function fromCsv<T>(text: string, options: CsvOptions = {}): T[] {
     const { separator: _sep, fields, mapping, detectTypes, arraySeparator } = { ...ReadCsvDefaultOptions, ...options }
 
     const lines = text.split('\n')
@@ -145,7 +146,11 @@ export function fromCsv<T extends Record<string, unknown>>(text: string, options
     }
     return objects
 }
-export async function readCsv<T extends Record<string, unknown>>(filePath: string, options: CsvOptions = {}): Promise<T[]> {
+export async function readCsv<T>(filePath: string, options: CsvOptions = {}): Promise<T[]> {
     const fileContent = await readFile(filePath, 'utf-8')
     return fromCsv(fileContent, options)
+}
+
+export function writeTsv(data: Writeable[], filePath: string, options: CsvOptions = {}): Promise<string> {
+    return writeCsv(data, filePath, { separator: '\t', ...options })
 }
