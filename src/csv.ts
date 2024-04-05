@@ -151,6 +151,10 @@ export async function readCsv<T>(filePath: string, options: CsvOptions = {}): Pr
     return fromCsv(fileContent, options)
 }
 
-export function writeTsv(data: Writeable[], filePath: string, options: CsvOptions = {}): Promise<string> {
+export async function writeTsv(data: Writeable[], filePath: string, options: CsvOptions = {}): Promise<string> {
     return writeCsv(data, filePath, { separator: '\t', ...options })
 }
+
+export async function readTsv<T>(filePath: string, options: CsvOptions = {}): Promise<T[]> {
+    return readCsv(filePath, { separator: '\t', ...options })
+} 
