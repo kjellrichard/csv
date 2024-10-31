@@ -53,6 +53,7 @@ function getMappingValue(value: string, type?: CsvMappingType | 'auto', arraySep
         value = value.replace(/^"|"$/g, '')
     }
 
+
     if (value.includes(arraySeparator)) {
         const values = splitLine(value, arraySeparator)
         return values.map(v => getMappingValue(v, type, arraySeparator))
@@ -135,6 +136,9 @@ export function fromCsv<T>(text: string, options: CsvOptions = {}): T[] {
 
     for (let i = 1; i < fileData.length; i++) {
         const values = fileData[i]
+        //if ( values.length === 1 && values[0] === '' )
+        if (values.join('').length < 2)
+            continue
         const obj2 = headers.reduce((acc, header, index) => {
             let type = mapping?.[header]?.type as CsvMappingType | 'auto' | undefined
             if (!type && detectTypes)

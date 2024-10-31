@@ -1,7 +1,7 @@
 
 import { expect, it, describe } from 'vitest'
 import { unlink, writeFile } from 'fs/promises'
-import { fromCsv, readCsv, toCsv, writeCsv } from '../src/csv'
+import { fromCsv, readCsv, toCsv, Writeable, writeCsv } from '../src/csv'
 
 describe('Csv', () => {
     it('should write csv', async () => {
@@ -22,7 +22,7 @@ describe('Csv', () => {
 3,"Mouse,Mickey",2002,black|white,2021-01-03,1|2
 4,"Mick "The man" Jagger",1943,purple|orange,2021-01-04,8|9`
 
-        const data = await fromCsv(text, { separator: ',' })
+        const data = await fromCsv<Writeable>(text, { separator: ',' })
         expect(data).toEqual([
             { Id: 1, Name: 'Doe, John', Born: 2000, Colors: ['red', 'blue'], Joined: new Date('2021-01-01'), KidsAge: [5, 7] },
             { Id: 2, Name: 'Doe, Jane', Born: 2001, Colors: ['green', 'yellow'], Joined: new Date('2021-01-02'), KidsAge: [3, 4] },
@@ -33,6 +33,23 @@ describe('Csv', () => {
         const data2 = await fromCsv(csvText, { separator: '\t' })
         expect(data2).toEqual(data)
     })
+
+    it('parse and serialize correctly even if data is not ended perfectly', async () => {
+        const text = `Id,Name,Born,Colors,Joined,KidsAge
+1,"Doe, John",2000,red|blue,2021-01-01,5|7
+2,"Doe, Jane",2001,green|yellow,2021-01-02,3|4
+`
+
+        const data = await fromCsv<Writeable>(text, { separator: ',' })
+        expect(data).toEqual([
+            { Id: 1, Name: 'Doe, John', Born: 2000, Colors: ['red', 'blue'], Joined: new Date('2021-01-01'), KidsAge: [5, 7] },
+            { Id: 2, Name: 'Doe, Jane', Born: 2001, Colors: ['green', 'yellow'], Joined: new Date('2021-01-02'), KidsAge: [3, 4] }
+        ])
+        const csvText = toCsv(data, { separator: '\t' })
+        const data2 = await fromCsv(csvText, { separator: '\t' })
+        expect(data2).toEqual(data)
+    })
+
 
     it('should handle other separators', async () => {
         const text = `Id;KidsAge
